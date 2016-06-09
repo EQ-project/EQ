@@ -6,9 +6,8 @@ const request = require('request');
 const querystring = require('querystring');
 const cookieParser = require('cookie-parser');
 
-const client_id = process.env.CLIENT_ID; // Your client id
-const client_secret = process.env.CLIENT_SECRET; // Your secret
-
+const client_id = process.env.CLIENT_ID;
+const client_secret = process.env.CLIENT_SECRET;
 const stateKey = 'spotify_auth_state';
 
 const generateRandomString = require('../lib/generate-random-string');
