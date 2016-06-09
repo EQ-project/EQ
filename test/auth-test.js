@@ -110,7 +110,8 @@ describe('unit tests', () => {
 
     it('should sign in a user with a token', (done) => {
       request('localhost:8888')
-      .get('/signin/1216797299')
+      .get('/signin')
+      .set('manager', '1216797299')
       .auth('test2', 'test2')
       .end((err, res) => {
         if (err) throw err;

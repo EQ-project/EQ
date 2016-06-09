@@ -8,8 +8,6 @@ const jwtAuth = require('../lib/jwt-auth');
 const request = require('superagent');
 const User = require('../model/user');
 const Manager = require('../model/manager');
-const refreshVetoes = require('../lib/refresh-vetoes');
-
 
 let access_token;
 let playlist_id;
@@ -32,7 +30,7 @@ router.get('/playlist', findModels, checkToken, jwtAuth, (req, res) => {
         let playlistArr =res.body.tracks.items;
         resolve (playlistArr.map(function(item, index) {
 
-          if (item.track.artists.length > 1) {
+          if(item.track.artists.length > 1) {
             return {
               postion: index,
               id: item.track.id,
@@ -94,51 +92,40 @@ router.post('/add/:track', findModels, checkToken, jwtAuth, (req, res, next) => 
   access_token = res.manager.accessToken;
   let track = req.params.track;
 
-  if (res.user === undefined && (res.manager.tracks.indexOf(track) !== -1) ) {
-    return res.json({Message: 'Song already on playlist.'});
+  request
+    .post(`https://api.spotify.com/v1/users/${res.session.manager_id}/playlists/${res.session.playlist_id}/tracks`)
+    .send({uris: [`${track}`]})
+    .set('Authorization', `Bearer ${access_token}`)
+    .set('Accept', 'application/json')
+    .end((err) => {
+      if(err) return next(err);
 
-  } else if (res.user && res.user.tracks.indexOf(track) !== -1) {
-    return res.json({Message: 'Song already on playlist.'});
-  }
-   else {
+      if (res.user === undefined) {
+        Manager.findOne({username: res.manager.username}, (err, manager) => {
+          if (err) return res.send('Cannot find manager.');
 
-    request
-      .post(`https://api.spotify.com/v1/users/${res.session.manager_id}/playlists/${res.session.playlist_id}/tracks`)
-      .send({uris: [`${track}`]})
-      .set('Authorization', `Bearer ${access_token}`)
-      .set('Accept', 'application/json')
-      .end((err) => {
-        if (err) {
-          return next(err);
-        }
-        console.log('res user', res.user);
-        if (res.user === undefined) {
-          Manager.findOne({username: res.manager.username}, (err, manager) => {
-            if (err) return next(err);
-
-            let managerTrackArray = manager.tracks; //prevent manager from adding same track
-            managerTrackArray.push(track);
-            Manager.findOneAndUpdate({username: manager.username}, {$set: {tracks: managerTrackArray}}, (err) => {
-              if (err) return next(new Error('Cannot update user tracks'));
-              return res.json({Message:'Track added!'});
-            });
+          let managerTrackArray = manager.tracks; //prevent manager from adding same track
+          managerTrackArray.push(track);
+          Manager.findOneAndUpdate({username: manager.username}, {$set: {tracks: managerTrackArray}}, (err) => {
+            if (err) return next(new Error('Cannot update user tracks'));
+            return res.json({Message:'Track added!'});
           });
-        } else {
+        });
+      } else {
 
-          User.findOne({username: res.user.username}, (err, user) => {
-            let userTrackArray = user.tracks; //prevent user from adding same track
-            userTrackArray.push(track);
-            User.findOneAndUpdate({username: user.username}, {$set: {tracks: userTrackArray}}, (err) => {
-              if (err) return next(new Error('Cannot update user tracks'));
-              res.json({Message:'Track added!'});
-            });
+        User.findOne({username: res.user.username}, (err, user) => {
+          let userTrackArray = user.tracks; //prevent user from adding same track
+          userTrackArray.push(track);
+          User.findOneAndUpdate({username: user.username}, {$set: {tracks: userTrackArray}}, (err) => {
+            if (err) return next(new Error('Cannot update user tracks'));
+            res.json({Message:'Track added!'});
           });
-        }
-      });
-  }
+        });
+      }
+    });
 });
 
-router.delete('/delete/:track', findModels, checkToken, jwtAuth, refreshVetoes, (req, res, next) => {
+router.delete('/delete/:track', findModels, checkToken, jwtAuth, (req, res, next) => {
 
   let manager = res.manager;
   let track = req.params.track;
@@ -146,16 +133,14 @@ router.delete('/delete/:track', findModels, checkToken, jwtAuth, refreshVetoes, 
   playlist_id = res.session.playlist_id;
   access_token = manager.accessToken;
 
-  if (res.user === undefined) {
+  if(res.user === undefined) {
     Manager.findOne({username: res.manager.username}, (err, manager) => {
       if (err) return next(new Error('Cannot find manager.'));
 
-      if (manager.vetoes === res.session.users.length + 1) {
-        return res.json({Message: 'Out of vetoes'});
-      }
-      else {
-        let newManagerVetoCount = manager.vetoes + 1;
-        console.log('newManagerVetoCount', newManagerVetoCount);
+      if(manager.vetoes === res.session.users.length + 1) {
+        res.send('Out of vetoes');
+      } else {
+        let newManagerVetoCount = manager.vetoes + 1; //prevent manager from adding same track
         Manager.findOneAndUpdate({username: manager.username}, {$set: {vetoes: newManagerVetoCount}}, (err) => {
           if (err) return next(new Error('Cannot update user vetoes'));
           return;
@@ -176,8 +161,8 @@ router.delete('/delete/:track', findModels, checkToken, jwtAuth, refreshVetoes, 
             'Accept', 'application/json'
           )
           .end((err) => {
-            if (err) return next(err);
-            return res.json({Message:'Track deleted!'});
+            if(err) return next(err);
+            res.json({Message:'Track deleted!'});
           });
       }
     });
@@ -185,12 +170,11 @@ router.delete('/delete/:track', findModels, checkToken, jwtAuth, refreshVetoes, 
 
     User.findOne({username: res.user.username}, (err, user) => {
 
-      if (user.vetoes === res.session.users.length + 1) {
-
-        res.json({Message: 'Out of vetoes'});
+      if(user.vetoes === res.session.users.length + 1) {
+        res.send('Out of vetoes');
 
       } else {
-        let newUserVetoCount = user.vetoes + 1;
+        let newUserVetoCount = user.vetoes + 1; //prevent user from adding same track
 
         User.findOneAndUpdate({username: user.username}, {$set: {vetoes: newUserVetoCount}}, (err) => {
           if (err) return next(new Error('Cannot update user tracks'));
@@ -212,7 +196,7 @@ router.delete('/delete/:track', findModels, checkToken, jwtAuth, refreshVetoes, 
             'Accept', 'application/json'
           )
           .end((err) => {
-            if (err) return next(err);
+            if(err) return next(err);
             res.json({Message:'Track deleted!'});
           });
       }
