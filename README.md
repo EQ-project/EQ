@@ -4,7 +4,7 @@ A server-side application enabling collaborative Spotify playlist creation and m
 ---
 
 ## Connecting to EQ
-To test out our application, the manager will need to authorize EQ to access their Premium Spotify account and manage their playlists. First, visit the [authorization page](http://http://eq-project.herokuapp.com/), which will grant EQ this access.
+To test out our application, the manager will need to authorize EQ to access their Premium Spotify account and manage their playlists. First, visit the [authorization page](https://eq-project.herokuapp.com/), which will grant EQ this access.
 
 Any additional collaborating users (excluding the manager) will be required to sign up with our application or log in.  You may use the REST client of your choice, but we are using curl for our demonstrations.
 

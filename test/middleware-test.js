@@ -31,23 +31,13 @@ req.headers.username = 'test';
 let res = {};
 let vUser;
 
-describe('unit tests', () => {
-
-  before((done) => {
-    request('localhost:8888')
-    .post('/signup')
-    .send({username:'test', password:'test'})
-    .end((err) => {
-      if (err) throw err;
-      done();
-    });
-  });
+describe('middleware unit tests', () => {
 
   before((done) => {
 
     let testManager = new Manager({username: '1216797299', accessToken: access_token, refreshToken: refresh_token, tokenExpires: Date.now() + 100000});
-    let testSession = new Session({managerId: '1216797299', users:['test']});
-    let testUser = new User({username:'test', password:'test', vetoes:1, signInTime:(Date.now() + 3600001)});
+    let testSession = new Session({manager_id: '1216797299', users:['test']});
+    let testUser = new User({username:'test2', password:'test2', vetoes:1, signInTime:(Date.now() + 3600001)});
 
     testManager.save((err, data) => {
       if (err) throw err;
@@ -58,7 +48,15 @@ describe('unit tests', () => {
 
         testUser.save((err) => {
           if (err) throw err;
-          done();
+
+          request('localhost:8888')
+          .post('/signup')
+          .set('manager', '1216797299')
+          .send({username:'test', password:'test'})
+          .end((err) => {
+            if (err) throw err;
+            done();
+          });
         });
       });
     });
@@ -81,18 +79,17 @@ describe('unit tests', () => {
       });
     });
 
-  //   it('should request a new token and store it on the manager if the current token is invalid', (done) => {
-  //     Manager.findOneAndUpdate({username: '1216797299'}, {$set: {tokenExpires: 0}}, {new: true}, (err, manager) => {
-  //       if (err) throw err;
-  //       res.manager = manager;
-  //       checkToken(req, res, () => {
-  //         expect(res.manager.accessToken).to.not.eql(accessToken);
-  //         done();
-  //       });
-  //     });
-  //   });
+    it('should request a new token and store it on the manager if the current token is invalid', (done) => {
+      Manager.findOneAndUpdate({username: '1216797299'}, {$set: {tokenExpires: 0}}, {new: true}, (err, manager) => {
+        if (err) throw err;
+        res.manager = manager;
+        checkToken(req, res, () => {
+          expect(res.manager.accessToken).to.not.eql(access_token);
+          done();
+        });
+      });
+    });
   });
-
 
   describe('generate random string tests', () => {
 

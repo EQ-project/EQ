@@ -14,7 +14,7 @@ const Session = require('../model/session');
 process.env.MONGOLAB_URI = 'mongodb://localhost/test_db';
 require('../server');
 
-describe('unit tests', () => {
+describe('auth unit tests', () => {
 
   after((done) => {
     process.env.MONGOLAB_URI = dbPort;
@@ -29,14 +29,15 @@ describe('unit tests', () => {
   let token;
 
   before((done) => {
-    request('localhost:8888')
-    .post('/signup')
-    .send({username:'test', password:'test'})
-    .end((err, res) => {
-      if (err) throw err;
-      token = res.body.token;
-      let testSession = new Session({managerId: '1216797299'});
-      testSession.save(() => {
+    let testSession = new Session({managerId: '1216797299'});
+    testSession.save(() => {
+      request('localhost:8888')
+      .post('/signup')
+      .set('manager', '1216797299')
+      .send({username:'test', password:'test'})
+      .end((err, res) => {
+        if (err) throw err;
+        token = res.body.token;
         done();
       });
     });
@@ -83,7 +84,6 @@ describe('unit tests', () => {
       expect(err.message).to.eql('Invalid token');
       done();
     });
-
   });
 
   describe('auth route tests', () => {
@@ -98,6 +98,7 @@ describe('unit tests', () => {
     it('should sign up a new user', (done) => {
       request('localhost:8888')
       .post('/signup')
+      .set('manager', '1216797299')
       .send({username:'test2', password:'test2'})
       .end((err, res) => {
         if (err) throw err;

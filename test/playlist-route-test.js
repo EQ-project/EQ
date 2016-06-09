@@ -20,15 +20,26 @@ describe('playlist routes', () => {
   let manager;
 
   before((done) => {
-    request('localhost:8888')
-    .post('/signup')
-    .send({username:'test', password:'test'})
-    .end((err, res) => {
+    let testManager = new Manager({username: '1216797299', accessToken: access_token, refreshToken: 'test', tokenExpires: Date.now() + 100000});
+    let testSession = new Session({managerId: '1216797299'});
+    testManager.save((err, data) => {
       if (err) throw err;
-      token = res.body.token;
-      done();
+      manager = data;
+      testSession.save((err) => {
+        if (err) throw err;
+        request('localhost:8888')
+        .post('/signup')
+        .set('manager', '1216797299')
+        .send({username:'test', password:'test'})
+        .end((err, res) => {
+          if (err) throw err;
+          token = res.body.token;
+          done();
+        });
+      });
     });
   });
+
 
   before((done) => {
     let testManager = new Manager({username: '1216797299', accessToken: access_token, refreshToken: 'test', tokenExpires: Date.now() + 100000});
