@@ -8,6 +8,8 @@ const jwtAuth = require('../lib/jwt-auth');
 const request = require('superagent');
 const User = require('../model/user');
 const Manager = require('../model/manager');
+const refreshVetoes = require('../lib/refresh-vetoes');
+
 
 let access_token;
 let playlist_id;
@@ -129,7 +131,7 @@ router.post('/add/:track', findModels, checkToken, jwtAuth, (req, res, next) => 
     });
 });
 
-router.delete('/delete/:track', findModels, checkToken, jwtAuth, (req, res, next) => {
+router.delete('/delete/:track', findModels, checkToken, jwtAuth, refreshVetoes, (req, res, next) => {
 
   let manager = res.manager;
   let track = req.params.track;
@@ -142,9 +144,11 @@ router.delete('/delete/:track', findModels, checkToken, jwtAuth, (req, res, next
       if (err) return next(new Error('Cannot find manager.'));
 
       if(manager.vetoes === res.session.users.length + 1) {
-        res.send('Out of vetoes');
-      } else {
+        return res.send('Out of vetoes');
+      }
+      else {
         let newManagerVetoCount = manager.vetoes + 1; //prevent manager from adding same track
+        console.log('newManagerVetoCount', newManagerVetoCount);
         Manager.findOneAndUpdate({username: manager.username}, {$set: {vetoes: newManagerVetoCount}}, (err) => {
           if (err) return next(new Error('Cannot update user vetoes'));
           return;
@@ -166,7 +170,7 @@ router.delete('/delete/:track', findModels, checkToken, jwtAuth, (req, res, next
           )
           .end((err) => {
             if(err) return next(err);
-            res.json({Message:'Track deleted!'});
+            return res.json({Message:'Track deleted!'});
           });
       }
     });

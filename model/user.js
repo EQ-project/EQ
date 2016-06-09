@@ -10,7 +10,8 @@ const User = new mongoose.Schema({
   password: {type: String, required: true},
   user_token: {type: String, default: null},
   vetoes: {type: Number, required: true, default: 0},
-  tracks: {type: Array}
+  tracks: {type: Array},
+  signInTime: {type: Number, default: Date.now()}
 });
 
 User.methods.hashPassword = function() {
