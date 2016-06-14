@@ -22,6 +22,13 @@ describe('playlist routes', () => {
   let manager;
 
   before((done) => {
+    //If you're using the same number multiple times throughout your code you
+    //should assign it to a variable somewhere. Both so that if you have to change
+    //it you only have to change it in one place and to give it semantic meaning.
+    //Numbers that appear multiple times like this without explicitly stated
+    //meaning are called 'magic numbers.' Since it's just a number it's hard to
+    //tell why you're using it multiple times and you can make that clear with your
+    //variable name. Something like: const TEST_ID = '1216797299'
     let testManager = new Manager({username: '1216797299', accessToken, refreshToken: 'test', tokenExpires: Date.now() + 100000});
     let testSession = new Session({managerId: '1216797299'});
 
@@ -96,6 +103,7 @@ describe('playlist routes', () => {
 
     it('should add a track', (done) => {
       request('localhost:8888')
+      //I'd probably also set this track id to a constant.
       .post('/add/spotify:track:33vzOPcd9FRirYGlCu32x4')
       .set('token', token)
       .set('username', manager.username)
