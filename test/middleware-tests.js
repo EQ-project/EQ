@@ -22,7 +22,7 @@ const accessToken = process.env.ACCESS_TOKEN;
 const refreshToken = process.env.REFRESH_TOKEN;
 
 require('../server');
-
+//I'd scope these to the describe as opposed to the whole file.
 let req = {};
 req.token = accessToken;
 req.headers = {};
@@ -33,7 +33,7 @@ let vUser;
 describe('middleware unit tests', () => {
 
   before((done) => {
-
+    //see note in playlist-route-tests re: magic numbers.
     let testManager = new Manager({username: '1216797299', accessToken, refreshToken, tokenExpires: Date.now() + 100000});
     let testSession = new Session({managerId: '1216797299', users:['test']});
     let testUser = new User({username:'test2', password:'test2', vetoes:1, signInTime:(Date.now() + 3600001)});
@@ -62,6 +62,8 @@ describe('middleware unit tests', () => {
   });
 
   after((done) => {
+    //We had this in some in class code but it's not explictly necessary. This
+    //port is going to be reset when the process that includes mongo closes.
     process.env.MONGOLAB_URI = dbPort;
     mongoose.connection.db.dropDatabase(() => {
       done();
@@ -107,6 +109,9 @@ describe('middleware unit tests', () => {
         expect(res).to.have.property('manager');
         expect(res).to.have.property('session');
         expect(res.user.username).to.eql('test');
+        //if you need to use something in a later test set it in a before.
+        //Tests should be independant of eachother. You should be able to run
+        //them in random order.
         vUser = res.user;
         done();
       });

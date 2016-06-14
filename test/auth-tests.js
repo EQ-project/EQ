@@ -83,7 +83,12 @@ describe('auth unit tests', () => {
   });
 
   describe('auth route tests', () => {
-
+    //Since this describe is nested the after in the outer describe will run
+    //after this whole block. So this after block is actually running twice
+    //in a row. Once as the one after the last test in this describe and one
+    //after the whole describe from the external describe. I'd take it out,
+    //both because it could be misleading and because it could cause problems
+    //if you added another describe after this one.
     after((done)=> {
       process.env.MONGOLAB_URI = dbPort;
       mongoose.connection.db.dropDatabase(() => {
