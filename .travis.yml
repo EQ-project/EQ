@@ -18,3 +18,11 @@ after_success: npm run coveralls
 script:
   - npm test
   - npm run lint
+notifications:
+  email:
+    recipients:
+      - stefuhnee@gmail.com
+    on_failure: change
+  slack:
+    rooms:
+      secure: "FH4xpJj3jdq4XsSkx+3qKpRIrjQFb2OTxGUCesPekJ4tZ3/Il7NJt5cL41pvKw3VxU9vwT1hPYlytVbDEmOWbORK+ncd83tWRr5n93ooP0VFs47yaBQZAiW1dCli89l9l+cEDDw/PMNe9Jtg/uKcLx3/P5ZM5yX2ot3XDWbm/Tu98c6OKTd0zmQ+yXR8IFUn0QvkmD6mb0zk7Z9zgYkjzsmta84I2ka7uKsWp8wLpYifBzdBi+rOqf1VEFMtwUVw3i/X6Qu5urkFNChFZa1mhHYZQOcip5vZPkqSsxZmQJqKlsAvVZKrju2olu5Ek93TosRdYFduPoysgSzZe9rWywKIxpGnmlggFW1jWQhdO6VbxIl1GqdKmR4K664m1aeN0Etu0SEyw+h4XyDg5vWFyLFsuE98Avon8+a4nHP5HR4r8jDohyy+Z2wUevCNp8yXMOidbBe3SWNnlQpPKT6z7WMOPVZyiOKCSH9kI2BG98UH9a3g0nz9zXQxbCZn01VosCT7wFdvmA8+UgtKKVmaBcOXdfpUM7N3CpEdvy/nEl+bsuxYeiamTa6GbMFXe6naeUFM7SmEJAvLSTgOPSKp1zL5nYK/OqBSqu0uG5EOZN/G1PMYnVoqYml6cRPUVw/R4vSCMBZJESYKFS253bOU4S0zWEpbub+de4Y9Poiv/xA="

@@ -9,14 +9,21 @@ const secret = process.env.SECRET || 'testPass';
 const User = new mongoose.Schema({
   username: {type: String, required: true},
   password: {type: String, required: true},
+  findHash: {type: String, unique: true},
   userToken: {type: String, default: null},
   vetoes: {type: Number, required: true, default: 0},
   tracks: {type: Array},
-  signInTime: {type: Number, default: Date.now()}
+  signInTime: {type: Number, default: Date.now()},
 });
 
-User.methods.hashPassword = function() {
-  return bcrypt.hashSync(this.password, 8);
+User.methods.generatePasswordHash = function(password) {
+  return new Promise((resolve, reject) => {
+    bcrypt.hashSync(this.password, 8, (err, hash) => {
+      if (err) return reject(err);
+      this.password = hash;
+      resolve(this);
+    });
+  });
 };
 
 User.methods.comparePassword = function(password) {
